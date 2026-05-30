@@ -3,6 +3,10 @@ from backend.agents.routes import router as agent_router
 
 from backend.messages.routes import router as message_router
 
+from backend.policies.routes import (
+    router as policy_router
+)
+
 
 
 app = FastAPI(
@@ -13,6 +17,7 @@ app = FastAPI(
 
 app.include_router(agent_router)
 app.include_router(message_router)
+app.include_router(policy_router)
 
 
 @app.get("/")
