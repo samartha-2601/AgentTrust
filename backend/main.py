@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from backend.agents.routes import router as agent_router
 
 app = FastAPI(
     title="AgentTrust",
@@ -6,11 +7,15 @@ app = FastAPI(
     version="0.1.0"
 )
 
+app.include_router(agent_router)
+
+
 @app.get("/")
 def root():
     return {
         "message": "AgentTrust API Running"
     }
+
 
 @app.get("/health")
 def health():
