@@ -35,4 +35,17 @@ def create_agent(agent: AgentCreate):
 
 @router.get("/agents")
 def list_agents():
-    return AGENTS
+
+    safe_agents = []
+
+    for agent in AGENTS:
+        safe_agents.append(
+            {
+                "agent_id": agent["agent_id"],
+                "name": agent["name"],
+                "role": agent["role"],
+                "public_key": agent["public_key"]
+            }
+        )
+
+    return safe_agents
