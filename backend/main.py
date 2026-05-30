@@ -7,7 +7,9 @@ from backend.policies.routes import (
     router as policy_router
 )
 
+from backend.database.init_db import create_tables
 
+create_tables()
 
 app = FastAPI(
     title="AgentTrust",

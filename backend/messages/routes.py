@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+
+from sqlalchemy.orm import Session
 
 from backend.messages.schemas import (
     SignRequest,
@@ -10,21 +12,21 @@ from backend.crypto.signing import (
     verify_message
 )
 
-from backend.agents.routes import AGENTS
+from backend.database.dependencies import get_db
+from backend.database.models import Agent
 
 router = APIRouter()
 
 
 @router.post("/messages/sign")
-def sign(payload: SignRequest):
+def sign(
+    payload: SignRequest,
+    db: Session = Depends(get_db)
+):
 
-    agent = next(
-        (
-            a for a in AGENTS
-            if a["agent_id"] == payload.agent_id
-        ),
-        None
-    )
+    agent = db.query(Agent).filter(
+        Agent.agent_id == payload.agent_id
+    ).first()
 
     if not agent:
         raise HTTPException(
@@ -34,26 +36,25 @@ def sign(payload: SignRequest):
 
     signature = sign_message(
         payload.message,
-        agent["private_key"]
+        agent.private_key
     )
 
     return {
-        "agent_id": payload.agent_id,
+        "agent_id": agent.agent_id,
         "message": payload.message,
         "signature": signature
     }
 
 
 @router.post("/messages/verify")
-def verify(payload: VerifyRequest):
+def verify(
+    payload: VerifyRequest,
+    db: Session = Depends(get_db)
+):
 
-    agent = next(
-        (
-            a for a in AGENTS
-            if a["agent_id"] == payload.agent_id
-        ),
-        None
-    )
+    agent = db.query(Agent).filter(
+        Agent.agent_id == payload.agent_id
+    ).first()
 
     if not agent:
         raise HTTPException(
@@ -61,12 +62,12 @@ def verify(payload: VerifyRequest):
             detail="Agent not found"
         )
 
-    result = verify_message(
+    verified = verify_message(
         payload.message,
         payload.signature,
-        agent["public_key"]
+        agent.public_key
     )
 
     return {
-        "verified": result
+        "verified": verified
     }

@@ -1,6 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 
-from backend.agents.routes import AGENTS
+from sqlalchemy.orm import Session
+
+from backend.database.dependencies import get_db
+from backend.database.models import Agent
 
 from backend.policies.schemas import (
     PolicyCheckRequest
@@ -15,32 +18,28 @@ router = APIRouter()
 
 @router.post("/policies/check")
 def check_policy(
-    payload: PolicyCheckRequest
+    payload: PolicyCheckRequest,
+    db: Session = Depends(get_db)
 ):
 
-    agent = next(
-        (
-            a for a in AGENTS
-            if a["agent_id"] == payload.agent_id
-        ),
-        None
-    )
+    agent = db.query(Agent).filter(
+        Agent.agent_id == payload.agent_id
+    ).first()
 
     if not agent:
-
         raise HTTPException(
             status_code=404,
             detail="Agent not found"
         )
 
     allowed = is_action_allowed(
-        agent["role"],
+        agent.role,
         payload.action
     )
 
     return {
-        "agent_id": payload.agent_id,
-        "role": agent["role"],
+        "agent_id": agent.agent_id,
+        "role": agent.role,
         "action": payload.action,
         "allowed": allowed
     }
