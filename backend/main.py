@@ -11,6 +11,10 @@ from backend.database.init_db import create_tables
 
 from backend.audit.routes import router as audit_router
 
+from backend.trust_chain.routes import (
+    router as trust_chain_router
+)
+
 create_tables()
 
 app = FastAPI(
@@ -23,6 +27,7 @@ app.include_router(agent_router)
 app.include_router(message_router)
 app.include_router(policy_router)
 app.include_router(audit_router)
+app.include_router(trust_chain_router)
 
 
 @app.get("/")
