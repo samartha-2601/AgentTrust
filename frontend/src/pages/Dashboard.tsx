@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
+
 import api from "../services/api";
 
+import Layout from "../components/Layout";
 import TrustChainCard from "../components/TrustChainCard";
+import AuditEventCard from "../components/AuditEventCard";
 
 function Dashboard() {
 
@@ -10,7 +13,11 @@ function Dashboard() {
   const [allowed, setAllowed] = useState(0);
   const [denied, setDenied] = useState(0);
 
-  const [trustChains, setTrustChains] = useState<any[]>([]);
+  const [trustChains, setTrustChains] =
+    useState<any[]>([]);
+
+  const [auditEvents, setAuditEvents] =
+    useState<any[]>([]);
 
   useEffect(() => {
     loadData();
@@ -37,7 +44,13 @@ function Dashboard() {
         chainsResponse.data.length
       );
 
-      setTrustChains(chainsResponse.data);
+      setTrustChains(
+        chainsResponse.data
+      );
+
+      setAuditEvents(
+        auditResponse.data
+      );
 
       const allowedCount =
         auditResponse.data.filter(
@@ -60,10 +73,12 @@ function Dashboard() {
       console.error(error);
 
     }
+
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+
+    <Layout>
 
       <div className="p-8">
 
@@ -71,14 +86,16 @@ function Dashboard() {
           AgentTrust Dashboard
         </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Metrics */}
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
 
           <div className="bg-white p-6 rounded-lg shadow">
             <h2 className="text-gray-500">
               Total Agents
             </h2>
 
-            <p className="text-3xl font-bold">
+            <p className="text-4xl font-bold mt-2">
               {agents}
             </p>
           </div>
@@ -88,7 +105,7 @@ function Dashboard() {
               Trust Chains
             </h2>
 
-            <p className="text-3xl font-bold">
+            <p className="text-4xl font-bold mt-2">
               {chains}
             </p>
           </div>
@@ -98,7 +115,7 @@ function Dashboard() {
               Allowed Actions
             </h2>
 
-            <p className="text-3xl font-bold">
+            <p className="text-4xl font-bold mt-2 text-green-600">
               {allowed}
             </p>
           </div>
@@ -108,41 +125,69 @@ function Dashboard() {
               Denied Actions
             </h2>
 
-            <p className="text-3xl font-bold">
+            <p className="text-4xl font-bold mt-2 text-red-600">
               {denied}
             </p>
           </div>
 
         </div>
 
-        <div className="mt-10">
+        {/* Trust Chains */}
 
-            <h2 className="text-2xl font-bold mb-4">
-                Recent Trust Chains
-            </h2>
+        <div className="mt-12">
 
-            <div className="space-y-4">
+          <h2 className="text-2xl font-bold mb-4">
+            Recent Trust Chains
+          </h2>
 
-                {trustChains.map((chain) => (
+          <div className="space-y-4">
 
-                <TrustChainCard
-                    key={chain.chain_id}
-                    finding={chain.finding}
-                    research_agent={chain.research_agent}
-                    review_agent={chain.review_agent}
-                    security_agent={chain.security_agent}
-                    chain_valid={chain.chain_valid}
-                />
+            {trustChains.map((chain) => (
 
-                ))}
+              <TrustChainCard
+                key={chain.chain_id}
+                finding={chain.finding}
+                research_agent={chain.research_agent}
+                review_agent={chain.review_agent}
+                security_agent={chain.security_agent}
+                chain_valid={chain.chain_valid}
+              />
 
-            </div>
+            ))}
 
-            </div>
+          </div>
+
+        </div>
+
+        {/* Audit Events */}
+
+        <div className="mt-12">
+
+          <h2 className="text-2xl font-bold mb-4">
+            Recent Audit Events
+          </h2>
+
+          <div className="space-y-4">
+
+            {auditEvents.map((event) => (
+
+              <AuditEventCard
+                key={event.event_id}
+                action={event.action}
+                status={event.status}
+                timestamp={event.timestamp}
+              />
+
+            ))}
+
+          </div>
+
+        </div>
 
       </div>
 
-    </div>
+    </Layout>
+
   );
 }
 
