@@ -15,6 +15,14 @@ from backend.trust_chain.service import (
     build_trust_chain
 )
 
+from backend.trust_chain.persistence import (
+    save_trust_chain
+)
+
+from backend.trust_chain.models import (
+    TrustChain
+)
+
 router = APIRouter()
 
 
@@ -49,9 +57,43 @@ def create_chain(
             detail="Agent not found"
         )
 
-    return build_trust_chain(
+    result = build_trust_chain(
         payload.finding,
         research,
         review,
         security
     )
+
+    save_trust_chain(
+        db=db,
+        finding=payload.finding,
+        research_agent=research.name,
+        review_agent=review.name,
+        security_agent=security.name,
+        chain_valid=result["chain_valid"]
+    )
+
+    return result
+
+
+@router.get("/trust-chain")
+def list_trust_chains(
+    db: Session = Depends(get_db)
+):
+
+    chains = db.query(
+        TrustChain
+    ).all()
+
+    return [
+        {
+            "chain_id": c.chain_id,
+            "finding": c.finding,
+            "research_agent": c.research_agent,
+            "review_agent": c.review_agent,
+            "security_agent": c.security_agent,
+            "chain_valid": c.chain_valid,
+            "timestamp": c.timestamp
+        }
+        for c in chains
+    ]
