@@ -9,6 +9,8 @@ from backend.policies.routes import (
 
 from backend.database.init_db import create_tables
 
+from backend.audit.routes import router as audit_router
+
 create_tables()
 
 app = FastAPI(
@@ -20,6 +22,7 @@ app = FastAPI(
 app.include_router(agent_router)
 app.include_router(message_router)
 app.include_router(policy_router)
+app.include_router(audit_router)
 
 
 @app.get("/")

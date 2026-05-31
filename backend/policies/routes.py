@@ -13,6 +13,8 @@ from backend.policies.policy_engine import (
     is_action_allowed
 )
 
+from backend.audit.service import create_audit_event
+
 router = APIRouter()
 
 
@@ -35,6 +37,13 @@ def check_policy(
     allowed = is_action_allowed(
         agent.role,
         payload.action
+    )
+
+    create_audit_event(
+        db=db,
+        agent_id=agent.agent_id,
+        action=payload.action,
+        status="allowed" if allowed else "denied"
     )
 
     return {
